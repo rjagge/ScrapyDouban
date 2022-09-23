@@ -17,7 +17,8 @@ services:
     build: ./scrapyd
     container_name: douban_scrapyd
     ports:
-      - 6800:6800
+      - '6800:6800'
+      - '9999:22'
     environment:
       - TZ=Asia/Chongqing
       - MYSQL_HOST=mysql
@@ -26,3 +27,5 @@ services:
       - MYSQL_DB=douban
     links:
       - mysql
+    volumes:
+      - /home/user4/data/research/ScrapyDouban/scrapy:/srv/ScrapyDouban/scrapy

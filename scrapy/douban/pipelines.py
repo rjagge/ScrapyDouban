@@ -29,7 +29,7 @@ class DoubanPipeline(object):
         return db.connection.commit()
 
     def get_movie_meta(self, item):
-        sql = "SELECT id FROM movies WHERE douban_id=%s" % item["douban_id"]
+        sql = "SELECT id FROM movies WHERE name='%s'" % item["name"]
         cursor.execute(sql)
         return cursor.fetchone()
 
@@ -48,8 +48,17 @@ class DoubanPipeline(object):
         values = tuple(item.values())
         values.append(douban_id)
         fields = ["%s=" % i + "%s" for i in keys]
-        sql = "UPDATE movies SET %s WHERE douban_id=%s" % (",".join(fields), "%s")
+        sql = "UPDATE movies SET %s WHERE douban_id=%s" % (
+            ",".join(fields), "%s")
         cursor.execute(sql, tuple(i.strip() for i in values))
+        return db.connection.commit()
+
+    def update_movie_meta_by_name(self, item):
+        douban_id = item.pop("douban_id")
+        name = item.pop("name")
+        sql = "UPDATE movies SET douban_id = %s WHERE name='%s'" % (
+            douban_id, name)
+        cursor.execute(sql)
         return db.connection.commit()
 
     def get_book_meta(self, item):
@@ -72,7 +81,8 @@ class DoubanPipeline(object):
         values = tuple(item.values())
         values.append(douban_id)
         fields = ["%s=" % i + "%s" for i in keys]
-        sql = "UPDATE books SET %s WHERE douban_id=%s" % (",".join(fields), "%s")
+        sql = "UPDATE books SET %s WHERE douban_id=%s" % (
+            ",".join(fields), "%s")
         cursor.execute(sql, values)
         return db.connection.commit()
 
@@ -107,7 +117,10 @@ class DoubanPipeline(object):
                 if not exist:
                     self.save_movie_meta(item)
                 else:
-                    self.update_movie_meta(item)
+                    if len(item) > 2:
+                        self.update_movie_meta(item)
+                    else:
+                        self.update_movie_meta_by_name(item)
             elif isinstance(item, BookMeta):
                 """
                 meta
@@ -132,6 +145,7 @@ class DoubanPipeline(object):
 
 class CoverPipeline(ImagesPipeline):
     def process_item(self, item, spider):
+        return item
         if "meta" not in spider.name:
             return item
         info = self.spiderinfo

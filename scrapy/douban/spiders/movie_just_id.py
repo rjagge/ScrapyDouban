@@ -3,22 +3,24 @@ import douban.util as util
 import douban.validator as validator
 from douban.items import MovieMeta
 from scrapy import Spider
+import json
 
 cursor = db.connection.cursor()
 
 
 class MovieMetaSpider(Spider):
-    name = "movie_meta"
+    name = "movie_just_id"
     allowed_domains = ["movie.douban.com"]
     user_agent = "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko"
-    sql = 'SELECT * FROM movies WHERE type ="" '
+    sql = 'SELECT * FROM movies WHERE name is not null AND douban_id = ""'
     cursor.execute(sql)
     movies = cursor.fetchall()
-    start_urls = ("https://movie.douban.com/subject/%s/" %
-                  i["douban_id"] for i in movies)
+    start_urls = ("https://douban.8610000.xyz/suggest/%s.json" %
+                  i["name"] for i in movies)
+    # start_urls = ["https://douban.8610000.xyz/suggest/我想吃掉你的胰脏.json"]
 
     def set_douban_id(self, meta, response):
-        meta["douban_id"] = response.url[33:-1]
+        meta["douban_id"] = json.loads(response.body)[0]['id']
         return meta
 
     def set_type(self, meta, response):
@@ -41,10 +43,7 @@ llowing-sibling::br]'
         return meta
 
     def set_name(self, meta, response):
-        regex = "//title/text()"
-        match = response.xpath(regex).get()
-        if match:
-            meta["name"] = match[:-5].strip()
+        meta["name"] = json.loads(response.body)[0]['title']
         return meta
 
     def set_slug(self, meta, response):
@@ -180,24 +179,5 @@ bling::br]/@href'
     def parse(self, response):
         meta = MovieMeta()
         self.set_douban_id(meta, response)
-        self.set_type(meta, response)
-        self.set_cover(meta, response)
         self.set_name(meta, response)
-        self.set_year(meta, response)
-        self.set_directors(meta, response)
-        self.set_writers(meta, response)
-        self.set_actors(meta, response)
-        self.set_genres(meta, response)
-        self.set_official_site(meta, response)
-        self.set_regions(meta, response)
-        self.set_languages(meta, response)
-        self.set_release_date(meta, response)
-        self.set_runtime(meta, response)
-        self.set_alias(meta, response)
-        self.set_imdb_id(meta, response)
-        self.set_score(meta, response)
-        self.set_votes(meta, response)
-        self.set_tags(meta, response)
-        self.set_storyline(meta, response)
-        self.set_slug(meta, response)
         return meta

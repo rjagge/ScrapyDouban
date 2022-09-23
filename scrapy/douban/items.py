@@ -1,3 +1,10 @@
+'''
+Date: 2022-09-14 22:30:22
+LastEditors: Jagger
+Description: 
+LastEditTime: 2022-09-22 16:03:21
+FilePath: /Repository/ScrapyDouban/scrapy/douban/items.py
+'''
 from scrapy import Field, Item
 
 
@@ -29,6 +36,7 @@ class MovieMeta(Item):
     douban_votes = Field()
     tags = Field()
     storyline = Field()
+    sell = Field()
 
 
 class BookMeta(Item):
@@ -63,3 +71,4 @@ class Comment(Item):
     douban_user_url = Field()
     content = Field()
     votes = Field()
+    star = Field()
