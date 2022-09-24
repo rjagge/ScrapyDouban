@@ -45,7 +45,7 @@ class DoubanPipeline(object):
     def update_movie_meta(self, item):
         douban_id = item.pop("douban_id")
         keys = item.keys()
-        values = tuple(item.values())
+        values = item.values()
         values.append(douban_id)
         fields = ["%s=" % i + "%s" for i in keys]
         sql = "UPDATE movies SET %s WHERE douban_id=%s" % (

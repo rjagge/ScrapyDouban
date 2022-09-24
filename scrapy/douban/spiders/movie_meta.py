@@ -3,6 +3,7 @@ import douban.util as util
 import douban.validator as validator
 from douban.items import MovieMeta
 from scrapy import Spider
+from scrapy.utils.response import open_in_browser
 
 cursor = db.connection.cursor()
 
@@ -14,8 +15,11 @@ class MovieMetaSpider(Spider):
     sql = 'SELECT * FROM movies WHERE type ="" '
     cursor.execute(sql)
     movies = cursor.fetchall()
-    start_urls = ("https://movie.douban.com/subject/%s/" %
-                  i["douban_id"] for i in movies)
+
+    start_urls = []
+    for i in movies:
+        if i["douban_id"] != 0:
+            start_urls.append("https://movie.douban.com/subject/%s/" % i["douban_id"])
 
     def set_douban_id(self, meta, response):
         meta["douban_id"] = response.url[33:-1]
@@ -200,4 +204,6 @@ bling::br]/@href'
         self.set_tags(meta, response)
         self.set_storyline(meta, response)
         self.set_slug(meta, response)
+        if meta['actors'] == '':
+            open_in_browser(response)
         return meta
