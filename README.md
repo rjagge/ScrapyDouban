@@ -1,3 +1,10 @@
+<!--
+ * @Date: 2022-09-23 10:56:14
+ * @LastEditors: Jagger
+ * @Description: 
+ * @LastEditTime: 2022-09-24 14:55:49
+ * @FilePath: /ScrapyDouban/README.md
+-->
 ## ScrapyDouban
 
 [![ScrapyDouban Demo](https://img.youtube.com/vi/Fyrvrb0rqvE/0.jpg)](https://www.youtube.com/watch?v=Fyrvrb0rqvE) [演示视频](https://www.youtube.com/watch?v=Fyrvrb0rqvE)
@@ -18,7 +25,7 @@ douban_scrapyd 容器基于 [python:3.9-slim-buster](https://pythonspeed.com/art
 
 douban_db 容器基于 mysql:8，root 密码为 public，默认初始化时导入 docker/mysql/douban.sql 文件到 douban 数据库。
 
-douban_adminer 容器基于 adminer:4，默认映射端口 8080:8080 以方便用户通过宿主机 IP:8080 访问数据库管理界面，登陆所需参数，服务器:mysql 用户名:root 密码:public。
+douban_adminer 容器基于 adminer:4，默认映射端口 8080:8080 以方那便用户通过宿主机 IP:8080 访问数据库管理界面，登陆所需参数，服务器:mysql 用户名:root 密码:public。
 
 
 ### 项目 SQL
@@ -36,7 +43,7 @@ douban_adminer 容器基于 adminer:4，默认映射端口 8080:8080 以方便�
     $ git clone https://github.com/baabaaox/ScrapyDouban.git
     # 构建并运行容器
     $ cd ./ScrapyDouban/docker
-    $ sudo docker-compose up --build -d
+    $ sudo docker compose up --build -d
     # 进入 douban_scrapyd 容器
     $ sudo docker exec -it douban_scrapyd bash
     # 进入 scrapy 目录

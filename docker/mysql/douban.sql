@@ -94,7 +94,7 @@ CREATE TABLE
         `recommend_tip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
         `tags` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
         `avg_score` decimal(3, 1) unsigned NOT NULL DEFAULT '0.0',
-        `sell` decimal(7, 1) unsigned NOT NULL DEFAULT '0.0',
+        `sell` decimal(7, 1) unsigned unsigned zerofill NOT NULL DEFAULT '0.0',
         `imdb_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
         `imdb_score` decimal(3, 1) unsigned NOT NULL DEFAULT '0.0',
         `imdb_votes` int(10) unsigned NOT NULL DEFAULT '0',
@@ -108,7 +108,8 @@ CREATE TABLE
         KEY `movies_douban_id_index` (`douban_id`)
     ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `subjects`;
+
+
 
 CREATE TABLE
     `subjects` (

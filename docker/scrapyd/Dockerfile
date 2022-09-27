@@ -7,6 +7,9 @@ RUN apt-get update \
     && pip install -i https://mirrors.aliyun.com/pypi/simple/ --upgrade pip \
     && pip install -i https://mirrors.aliyun.com/pypi/simple/ scrapy==$SCRAPY_VERSION pymysql==1.0.2 pillow==8.2.0 arrow==1.0.3 \
     && pip install -U git+https://github.com/scrapy/scrapyd.git \
+    && pip install requests \
+    && pip install fake_useragent \
+    && pip install getproxy \
     && git clone https://github.com/baabaaox/ScrapyDouban.git /srv/ScrapyDouban
 
 COPY scrapyd.conf /etc/scrapyd/

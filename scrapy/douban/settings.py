@@ -1,3 +1,10 @@
+'''
+Date: 2022-09-23 10:56:14
+LastEditors: Jagger
+Description: 
+LastEditTime: 2022-09-26 16:24:19
+FilePath: /ScrapyDouban/scrapy/douban/settings.py
+'''
 # Scrapy settings for douban project
 #
 # For simplicity, this file contains only settings considered important or
@@ -24,7 +31,7 @@ USER_AGENT = (
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -32,7 +39,7 @@ ROBOTSTXT_OBEY = False
 # DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
-CONCURRENT_REQUESTS_PER_IP = 1
+CONCURRENT_REQUESTS_PER_IP = 3
 
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = True
@@ -54,9 +61,14 @@ COOKIES_ENABLED = True
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'douban.middlewares.DoubanDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+#    'douban.middlewares.ProxyMiddleware':110,
+   'douban.middlewares.UserAgentMiddleware':110,
+   'douban.middlewares.ProxyMiddleware':120,
+   'douban.middlewares.DoubanDownloaderMiddleware': 543,
+   'scrapy.contrib.downloadermiddleware.redirect': None,
+}
+
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

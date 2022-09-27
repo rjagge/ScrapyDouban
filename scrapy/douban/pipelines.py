@@ -29,7 +29,7 @@ class DoubanPipeline(object):
         return db.connection.commit()
 
     def get_movie_meta(self, item):
-        sql = "SELECT id FROM movies WHERE name='%s'" % item["name"]
+        sql = "SELECT id FROM movies WHERE douban_id='%s'" % item["douban_id"]
         cursor.execute(sql)
         return cursor.fetchone()
 
@@ -45,9 +45,9 @@ class DoubanPipeline(object):
     def update_movie_meta(self, item):
         douban_id = item.pop("douban_id")
         keys = item.keys()
-        values = item.values()
+        values = list(item.values())
         values.append(douban_id)
-        fields = ["%s=" % i + "%s" for i in keys]
+        fields = ['%s=' % i + '%s' for i in keys]
         sql = "UPDATE movies SET %s WHERE douban_id=%s" % (
             ",".join(fields), "%s")
         cursor.execute(sql, tuple(i.strip() for i in values))

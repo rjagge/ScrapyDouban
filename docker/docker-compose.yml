@@ -1,4 +1,18 @@
 services:
+  proxy_pool:
+    build: ./proxy_pool
+    container_name: proxy_pool
+    ports:
+      - 5010:5010
+    links:
+      - proxy_redis
+    environment:
+      DB_CONN: "redis://@proxy_redis:6379/0"
+
+  proxy_redis:
+    image: "redis"
+    container_name: proxy_redis
+
   mysql:
     build: ./mysql
     container_name: douban_mysql
@@ -6,6 +20,7 @@ services:
       - MYSQL_ROOT_PASSWORD=public
       - MYSQL_DATABASE=douban
     command: mysqld --default-authentication-plugin=mysql_native_password
+
   adminer:
     image: adminer:4
     container_name: douban_adminer
@@ -13,6 +28,7 @@ services:
       - 8080:8080
     links:
       - mysql
+
   scrapyd:
     build: ./scrapyd
     container_name: douban_scrapyd
@@ -25,7 +41,9 @@ services:
       - MYSQL_USER=root
       - MYSQL_PASS=public
       - MYSQL_DB=douban
+      - PROXY_POOL_HOST=proxy_pool
     links:
       - mysql
+      - proxy_pool
     volumes:
       - /home/user4/data/research/ScrapyDouban/scrapy:/srv/ScrapyDouban/scrapy

@@ -1,5 +1,6 @@
 import hashlib
-
+import requests
+import os
 
 def shorturl(url):
     chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -10,3 +11,14 @@ def shorturl(url):
         code += chars[index]
         _hex = _hex >> 3
     return code
+
+
+def get_proxy():
+    # PROXY_POOL_HOST = os.environ.get("PROXY_POOL_HOST", "172.18.0.5")
+    PROXY_POOL_HOST = "http://172.18.0.5"
+    return requests.get(PROXY_POOL_HOST+":5010/get/?type=https").json()
+
+def delete_proxy(proxy):
+    # PROXY_POOL_HOST = os.environ.get("PROXY_POOL_HOST", "172.18.0.5")
+    PROXY_POOL_HOST = "http://172.18.0.5"
+    requests.get(PROXY_POOL_HOST+":5010/delete/?proxy=%s",proxy)

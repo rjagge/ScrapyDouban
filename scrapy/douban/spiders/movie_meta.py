@@ -2,8 +2,9 @@ import douban.database as db
 import douban.util as util
 import douban.validator as validator
 from douban.items import MovieMeta
-from scrapy import Spider
+from scrapy import Spider, Request
 from scrapy.utils.response import open_in_browser
+import time,random
 
 cursor = db.connection.cursor()
 
@@ -11,15 +12,26 @@ cursor = db.connection.cursor()
 class MovieMetaSpider(Spider):
     name = "movie_meta"
     allowed_domains = ["movie.douban.com"]
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko"
-    sql = 'SELECT * FROM movies WHERE type ="" '
-    cursor.execute(sql)
-    movies = cursor.fetchall()
 
-    start_urls = []
-    for i in movies:
-        if i["douban_id"] != 0:
-            start_urls.append("https://movie.douban.com/subject/%s/" % i["douban_id"])
+    def start_requests(self):
+        sql = 'SELECT * FROM movies WHERE type ="" '
+        cursor.execute(sql)
+        movies = cursor.fetchall()
+        #   'https://movie.douban.com/subject/26861685/comments?start=20&limit=20&status=P&sort=new_score'
+        baseurl = (
+            "https://movie.douban.com/subject/%s/"
+        )
+        # movies = [
+        #     {'douban_id': 1297389},
+        #     # {'douban_id': 34460763},
+        # ]
+
+        for movie in movies:
+            request = Request(
+                baseurl % movie["douban_id"],
+            )
+            time.sleep(max(0.5, random.gauss(2,1)))
+            yield request
 
     def set_douban_id(self, meta, response):
         meta["douban_id"] = response.url[33:-1]
@@ -204,6 +216,4 @@ bling::br]/@href'
         self.set_tags(meta, response)
         self.set_storyline(meta, response)
         self.set_slug(meta, response)
-        if meta['actors'] == '':
-            open_in_browser(response)
         return meta

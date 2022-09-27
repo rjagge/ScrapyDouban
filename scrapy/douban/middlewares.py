@@ -4,15 +4,38 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 # useful for handling different item types with a single interface
+from weakref import proxy
 from itemadapter import ItemAdapter, is_item
 from scrapy import signals
+import douban.util as util
+from fake_useragent import UserAgent
 
+class UserAgentMiddleware():
+    
+    def __init__(self):
+        self.ua = UserAgent()
 
-class ProxyMiddleware(object):
     def process_request(self, request, spider):
-        # curl https://m.douban.com/book/subject/26628811/ -x http://127.0.0.1:8081
-        request.meta["proxy"] = "http://127.0.0.1:8081"
+        request.headers['User-Agent'] = self.ua.random
 
+class ProxyMiddleware():
+
+    def process_request(self, request, spider):
+        proxy_ip = 'https://' + util.get_proxy().get("proxy") 
+        spider.logger.info('Use the proxy ip %s', proxy_ip)
+        request.meta['proxy'] = proxy_ip
+
+    def process_response(self, request, response, spider):
+        if response.status != 200:
+            old_proxy_ip = request.meta['proxy']
+            spider.logger.info('The current proxy ip %s can not be used anymore, delete it.', old_proxy_ip)
+            util.delete_proxy(old_proxy_ip[8:])
+
+            new_proxy_ip = 'https://' + util.get_proxy().get("proxy") 
+            request.meta['proxy'] = new_proxy_ip
+            spider.logger.info('Use the new proxy ip %s, and try the request again.', new_proxy_ip)
+            return request
+        return response
 
 class DoubanSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -87,7 +110,6 @@ class DoubanDownloaderMiddleware:
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
-
         # Must either;
         # - return a Response object
         # - return a Request object
