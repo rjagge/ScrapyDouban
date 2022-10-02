@@ -26,12 +26,12 @@ class MovieCommentSpider(Spider):
         movies = cursor.fetchall()
         #   'https://movie.douban.com/subject/26861685/comments?start=20&limit=20&status=P&sort=new_score'
         baseurl = (
-            "https://m.douban.com/rexxar/api/v2/movie/%s/interests?count=50&order_by=hot&start=107300"
+            "https://m.douban.com/rexxar/api/v2/movie/%s/interests?count=50&order_by=hot"
         )
-        movies = [
-            # {'douban_id':26861685},
-            {'douban_id': 35215390},
-        ]
+        # movies = [
+        #     # {'douban_id':26861685},
+        #     {'douban_id': 35215390},
+        # ]
         for movie in movies:
             yield Request(
                 baseurl % movie["douban_id"],

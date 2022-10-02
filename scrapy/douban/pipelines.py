@@ -8,7 +8,7 @@ from scrapy.utils.python import to_bytes
 from twisted.internet.defer import DeferredList
 
 import douban.database as db
-from douban.items import BookMeta, Comment, MovieMeta, Subject
+from douban.items import BookMeta, Comment, MovieMeta, MovieBox, Subject, Mtime
 
 cursor = db.connection.cursor()
 
@@ -28,8 +28,53 @@ class DoubanPipeline(object):
         cursor.execute(sql, values)
         return db.connection.commit()
 
+    def get_movie_box_meta(self, item):
+        sql = "SELECT id FROM movie_box WHERE name='%s' and release_year_china = '%s'" % (item["name"], item['release_year_china'])
+        cursor.execute(sql)
+        return cursor.fetchone()
+
+    def save_movie_box_meta(self, item):
+        if "（重映）" not in item['name']:
+            keys = item.keys()
+            values = tuple(item.values())
+            fields = ",".join(keys)
+            temp = ",".join(["%s"] * len(keys))
+            sql = "INSERT INTO movie_box (%s) VALUES (%s)" % (fields, temp)
+            cursor.execute(sql, tuple(str(i).strip() for i in values))
+            return db.connection.commit()
+        else:
+            logging.warn('%s is replayed, aborting...' % item['name'])
+
+    def get_mtime_meta(self, item):
+        sql = "SELECT id FROM mtime WHERE mtime_id='%s'" % item["mtime_id"]
+        cursor.execute(sql)
+        return cursor.fetchone()
+
+    def save_mtime_meta(self, item):
+        keys = item.keys()
+        values = tuple(item.values())
+        fields = ",".join(keys)
+        temp = ",".join(["%s"] * len(keys))
+        sql = "INSERT INTO mtime (%s) VALUES (%s)" % (fields, temp)
+        cursor.execute(sql, tuple(str(i).strip() for i in values))
+        return db.connection.commit()
+
+    def update_mtime_meta(self, item):
+        douban_id = item.pop("mtime_id")
+        keys = item.keys()
+        values = list(item.values())
+        values.append(douban_id)
+        fields = ['%s=' % i + '%s' for i in keys]
+        sql = "UPDATE mtime SET %s WHERE mtime_id=%s" % (
+            ",".join(fields), "%s")
+        cursor.execute(sql, tuple(i.strip() for i in values))
+        return db.connection.commit()
+
     def get_movie_meta(self, item):
-        sql = "SELECT id FROM movies WHERE douban_id='%s'" % item["douban_id"]
+        if 'douban_id' not in item:
+            sql = "SELECT id FROM movies WHERE name='%s'" % item["name"]
+        else:
+            sql = "SELECT id FROM movies WHERE douban_id='%s'" % item["douban_id"]
         cursor.execute(sql)
         return cursor.fetchone()
 
@@ -58,6 +103,15 @@ class DoubanPipeline(object):
         name = item.pop("name")
         sql = "UPDATE movies SET douban_id = %s WHERE name='%s'" % (
             douban_id, name)
+        cursor.execute(sql)
+        return db.connection.commit()
+    
+    def update_movie_meta_by_name_sell(self, item):
+        name = item.pop("name")
+        year_china = item.pop("release_year_china")
+        sell = item.pop("sell")
+        sql = "UPDATE movies SET release_year_china = %s WHERE name='%s' and sell='%s'" % (
+            year_china, name, sell)
         cursor.execute(sql)
         return db.connection.commit()
 
@@ -113,14 +167,21 @@ class DoubanPipeline(object):
                 """
                 meta
                 """
-                exist = self.get_movie_meta(item)
-                if not exist:
-                    self.save_movie_meta(item)
-                else:
-                    if len(item) > 2:
-                        self.update_movie_meta(item)
+                if spider.name == 'movie_sell':
+                    exist = self.get_movie_meta(item)
+                    if not exist:
+                        self.save_movie_meta(item)
                     else:
-                        self.update_movie_meta_by_name(item)
+                        self.update_movie_meta_by_name_sell(item)
+                else:
+                    exist = self.get_movie_meta(item)
+                    if not exist:
+                        self.save_movie_meta(item)
+                    else:
+                        if len(item) > 2:
+                            self.update_movie_meta(item)
+                        else:
+                            self.update_movie_meta_by_name(item)
             elif isinstance(item, BookMeta):
                 """
                 meta
@@ -137,6 +198,24 @@ class DoubanPipeline(object):
                 exist = self.get_comment(item)
                 if not exist:
                     self.save_comment(item)
+            elif isinstance(item, Mtime):
+                """
+                comment
+                """
+                exist = self.get_mtime_meta(item)
+                if not exist:
+                    self.save_mtime_meta(item)
+                else:
+                    self.update_mtime_meta(item)
+            elif isinstance(item, MovieBox):
+                """
+                comment
+                """
+                exist = self.get_movie_box_meta(item)
+                if not exist:
+                    self.save_movie_box_meta(item)
+                else:
+                    logging.info("item already existed %s" % item['name'])
         except Exception as e:
             logging.warn(item)
             logging.error(e)

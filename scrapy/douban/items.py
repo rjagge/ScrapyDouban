@@ -20,6 +20,7 @@ class MovieMeta(Item):
     name = Field()
     slug = Field()
     year = Field()
+    release_year_china = Field()
     directors = Field()
     writers = Field()
     actors = Field()
@@ -37,6 +38,11 @@ class MovieMeta(Item):
     tags = Field()
     storyline = Field()
     sell = Field()
+
+class MovieBox(Item):
+    name = Field()
+    release_year_china = Field()
+    box = Field()
 
 
 class BookMeta(Item):
@@ -72,3 +78,17 @@ class Comment(Item):
     content = Field()
     votes = Field()
     star = Field()
+
+class Mtime(Item):
+    mtime_id = Field()
+    name = Field()
+    name_en = Field()
+    movie_type = Field()
+    rating = Field()
+    directors = Field()
+    actors = Field()
+    location_name = Field()
+    realtime = Field()
+    year = Field()
+    month = Field()
+    day = Field()

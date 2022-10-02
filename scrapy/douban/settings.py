@@ -64,7 +64,7 @@ COOKIES_ENABLED = True
 DOWNLOADER_MIDDLEWARES = {
 #    'douban.middlewares.ProxyMiddleware':110,
    'douban.middlewares.UserAgentMiddleware':110,
-   'douban.middlewares.ProxyMiddleware':120,
+#    'douban.middlewares.ProxyMiddleware':120,
    'douban.middlewares.DoubanDownloaderMiddleware': 543,
    'scrapy.contrib.downloadermiddleware.redirect': None,
 }
