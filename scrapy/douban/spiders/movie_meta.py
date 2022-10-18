@@ -1,4 +1,4 @@
-import douban.database as db
+import douban.mysql.database as db
 import douban.util as util
 import douban.validator as validator
 from douban.items import MovieMeta
@@ -14,24 +14,22 @@ class MovieMetaSpider(Spider):
     allowed_domains = ["movie.douban.com"]
 
     def start_requests(self):
-        sql = 'SELECT * FROM movies WHERE type ="" '
+        # 首先在movie_box中找到所有的douban_id
+        sql = 'SELECT douban_id FROM movie_box WHERE douban_id != 0 and comments_count >= 200'
         cursor.execute(sql)
         movies = cursor.fetchall()
-        #   'https://movie.douban.com/subject/26861685/comments?start=20&limit=20&status=P&sort=new_score'
-        baseurl = (
-            "https://movie.douban.com/subject/%s/"
-        )
-        # movies = [
-        #     {'douban_id': 1297389},
-        #     # {'douban_id': 34460763},
-        # ]
-
+        # 然后依次检查该douban_id是否在movie表中
         for movie in movies:
-            request = Request(
-                baseurl % movie["douban_id"],
-            )
-            time.sleep(max(0.5, random.gauss(2,1)))
-            yield request
+            sql = 'SELECT id FROM movies WHERE douban_id =  %s' % movie['douban_id']
+            cursor.execute(sql)
+            check_exist = cursor.fetchone()
+            # 如果不在表中，那么补爬
+            if check_exist is None:
+                request = Request(
+                    "https://movie.douban.com/subject/%s/" % movie["douban_id"],
+                )
+                time.sleep(max(0.5, random.gauss(2,1)))
+                yield request
 
     def set_douban_id(self, meta, response):
         meta["douban_id"] = response.url[33:-1]
