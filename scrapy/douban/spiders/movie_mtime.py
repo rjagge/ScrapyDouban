@@ -9,7 +9,7 @@ from email.header import Header
 import json
 from urllib.parse import urlencode
 
-import douban.database as db
+import douban.mysql.database as db
 from douban.items import Comment, Mtime
 from scrapy import Request, Spider
 
@@ -17,7 +17,7 @@ cursor = db.connection.cursor()
 # referer = "https://m.douban.com/movie/subject/%s/?from=showing"
 
 
-class MovieMtimeSpider(Spider):
+class MovieMtimeAllSpider(Spider):
     name = "movie_mtime"
     allowed_domains = ["mtime.com"]
 
@@ -30,14 +30,28 @@ class MovieMtimeSpider(Spider):
         #     # {'douban_id':26861685},
         #     {'douban_id': 35215390},
         # ]
-        for year in range(1994,2023):
+        name_list = [
+            '亡命天涯',
+            '不能忘却的长征',
+            '北京的哥',
+            '铁血北疆曲',
+            '神兵小将',
+            '第一军规',
+            '袁崇焕',
+            '蝙蝠侠：黑暗骑士崛起',
+            '缘分',
+            '一家两口',
+            '失业生',
+            '风吹浪涌',
+            '天堂电影院'
+        ]
+        for name in name_list:
             yield Request(
                 baseurl,
                 method="POST",
                 body=urlencode({
+                    'keyword':name,
                     'pageIndex':'1',
-                    'pageSize':'50',
-                    'year':year,
                     'searchType':'0'
                 }),
                 headers={'Content-Type':'application/x-www-form-urlencoded'}
@@ -62,23 +76,3 @@ class MovieMtimeSpider(Spider):
             mtime["day"] = item['rDay']
             yield mtime
 
-        # 如果没有爬完，就继续爬
-        body = response.request.body.decode().split('&')
-        page_idx = body[0].split('=')[1]
-        page_size = body[1].split('=')[1]
-        year = body[2].split('=')[1]
-        end_idx = int(page_idx) * int(page_size)
-        if end_idx < data['data']['moviesCount']:
-            yield Request(
-                response.request.url,
-                method="POST",
-                body= urlencode({
-                    'pageIndex':int(page_idx)+1,
-                    'pageSize':page_size,
-                    'year':year,
-                    'searchType':'0'
-                }),
-                headers={'Content-Type':'application/x-www-form-urlencoded'},
-                callback=self.parse,
-                dont_filter=True
-            )

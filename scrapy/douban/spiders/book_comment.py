@@ -1,6 +1,6 @@
 import json
 
-import douban.database as db
+import douban.mysql.database as db
 from douban.items import Comment
 from scrapy import Request, Spider
 

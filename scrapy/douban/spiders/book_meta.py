@@ -1,4 +1,4 @@
-import douban.database as db
+import douban.mysql.database as db
 import douban.util as util
 from douban.items import BookMeta
 from scrapy import Spider

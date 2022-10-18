@@ -7,7 +7,7 @@ from scrapy.utils.misc import arg_to_iter
 from scrapy.utils.python import to_bytes
 from twisted.internet.defer import DeferredList
 
-import douban.database as db
+import douban.mysql.database as db
 from douban.items import BookMeta, Comment, MovieMeta, MovieBox, Subject, Mtime
 
 cursor = db.connection.cursor()
@@ -67,7 +67,7 @@ class DoubanPipeline(object):
         fields = ['%s=' % i + '%s' for i in keys]
         sql = "UPDATE mtime SET %s WHERE mtime_id=%s" % (
             ",".join(fields), "%s")
-        cursor.execute(sql, tuple(i.strip() for i in values))
+        cursor.execute(sql, tuple(str(i).strip() for i in values))
         return db.connection.commit()
 
     def get_movie_meta(self, item):

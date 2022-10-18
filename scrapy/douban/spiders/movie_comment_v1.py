@@ -1,13 +1,13 @@
 '''
 Date: 2022-09-14 22:30:22
 LastEditors: Jagger
-Description: 
+Description: 原来的豆瓣短评爬虫，已经弃用，详见v2。
 LastEditTime: 2022-09-22 16:03:59
 FilePath: /Repository/ScrapyDouban/scrapy/douban/spiders/movie_comment_v1.py
 '''
 import json
 
-import douban.database as db
+import douban.mysql.database as db
 from douban.items import Comment
 from scrapy import Request, Spider
 
