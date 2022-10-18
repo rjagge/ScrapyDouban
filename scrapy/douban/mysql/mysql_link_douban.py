@@ -1,5 +1,13 @@
+'''
+Date: 2022-10-10 22:21:44
+LastEditors: Jagger
+Description: 用来链接mtime和box
+LastEditTime: 2022-10-07 22:21:57
+FilePath: /zuhui/2022_10_05/sentence_piece.py
+'''
 import logging
 import database as db
+
 
 cursor = db.connection.cursor()
 
