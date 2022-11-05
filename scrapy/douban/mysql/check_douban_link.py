@@ -3,7 +3,8 @@ import database as db
 
 cursor = db.connection.cursor()
 
-sql = "select * from movie_box where douban_id != 0 and comments_count >= 200"
+# sql = "select * from movie_box where douban_id != 0 and comments_count >= 200"
+sql = "select * from movie_box where douban_id != 0"
 cursor.execute(sql)
 box_list = cursor.fetchall()
 

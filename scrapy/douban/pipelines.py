@@ -6,9 +6,10 @@ from scrapy.pipelines.images import ImagesPipeline
 from scrapy.utils.misc import arg_to_iter
 from scrapy.utils.python import to_bytes
 from twisted.internet.defer import DeferredList
+import json
 
 import douban.mysql.database as db
-from douban.items import BookMeta, Comment, MovieMeta, MovieBox, Subject, Mtime
+from douban.items import BookMeta, Comment, MovieMeta, MovieBox, Subject, Mtime, MtimeJson
 
 cursor = db.connection.cursor()
 
@@ -68,6 +69,23 @@ class DoubanPipeline(object):
         sql = "UPDATE mtime SET %s WHERE mtime_id=%s" % (
             ",".join(fields), "%s")
         cursor.execute(sql, tuple(str(i).strip() for i in values))
+        return db.connection.commit()
+    
+    def get_mtime_json_meta(self, item):
+        sql = "SELECT id FROM mtime_json WHERE mtime_id='%s'" % item['meta']['basic']['movieId']
+        cursor.execute(sql)
+        return cursor.fetchone()
+
+    def save_mtime_json_meta(self, item):
+        mtime_id = item['meta']['basic']['movieId']
+        sql = "INSERT INTO mtime_json (mtime_id, jsondoc) VALUES (%s, %s)" % (mtime_id, json.dumps(item['meta']))
+        cursor.execute(sql)
+        return db.connection.commit()
+
+    def update_mtime_json_meta(self, item):
+        mtime_id = item['meta']['basic']['movieId']
+        sql = "UPDATE mtime_json SET jsondoc = %s WHERE mtime_id=%s" % (mtime_id, json.dumps(item['meta']))
+        cursor.execute(sql)
         return db.connection.commit()
 
     def get_movie_meta(self, item):
@@ -200,16 +218,25 @@ class DoubanPipeline(object):
                     self.save_comment(item)
             elif isinstance(item, Mtime):
                 """
-                comment
+                Mtime
                 """
                 exist = self.get_mtime_meta(item)
                 if not exist:
                     self.save_mtime_meta(item)
                 else:
                     self.update_mtime_meta(item)
+            elif isinstance(item, MtimeJson):
+                """
+                MtimeJson
+                """
+                exist = self.get_mtime_json_meta(item)
+                if not exist:
+                    self.save_mtime_json_meta(item)
+                else:
+                    self.update_mtime_json_meta(item)
             elif isinstance(item, MovieBox):
                 """
-                comment
+                MovieBox
                 """
                 exist = self.get_movie_box_meta(item)
                 if not exist:

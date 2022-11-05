@@ -15,9 +15,14 @@ class MovieMetaSpider(Spider):
 
     def start_requests(self):
         # 首先在movie_box中找到所有的douban_id
-        sql = 'SELECT douban_id FROM movie_box WHERE douban_id != 0 and comments_count >= 200'
+        # sql = 'SELECT douban_id FROM movie_box WHERE douban_id != 0 and comments_count >= 200'
+        sql = 'SELECT douban_id FROM movie_box WHERE douban_id != 0'
         cursor.execute(sql)
         movies = cursor.fetchall()
+
+        # movies = [
+        #     {'douban_id': 26861685}
+        # ]
         # 然后依次检查该douban_id是否在movie表中
         for movie in movies:
             sql = 'SELECT id FROM movies WHERE douban_id =  %s' % movie['douban_id']

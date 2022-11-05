@@ -30,15 +30,16 @@ class MovieCommentSpider(Spider):
         
         # movies = [
         #     # {'douban_id':26861685},
-        #     {'douban_id': 35215390},
+        #     {'douban_id': 1301272,'comments_count': 0},
         # ]
         for movie in movies:
             douban_id = movie["douban_id"]
             start = movie["comments_count"]
-            yield Request(
-                self.baseurl % (douban_id, start),
-                headers={"Referer": referer % douban_id},
-            )
+            if start < 350:
+                yield Request(
+                    self.baseurl % (douban_id, start),
+                    headers={"Referer": referer % douban_id},
+                )
         
             
 
@@ -46,9 +47,10 @@ class MovieCommentSpider(Spider):
         douban_id = response.url.split("/")[-2]
         data = json.loads(response.body)
         items = data["interests"]
+        end_idx = min(data['total'], 400)
         # 如果items > 0， 就继续爬
         # 做这个处理的考虑是，短评的实际数量远远小于data['count']显示的数量
-        if len(items) > 0 :
+        if len(items) > 0 and data['start'] < end_idx:
             for item in items:
                 comment = Comment()
                 comment["douban_id"] = douban_id
@@ -62,11 +64,11 @@ class MovieCommentSpider(Spider):
                 yield comment
 
             # 如果当前电影没有爬完，就继续爬
-            end_idx = data['count'] + data['start']
-            if end_idx < data['total']:
+            _idx = data['count'] + data['start']
+            if _idx < end_idx:
                 yield Request(
                     response.urljoin(
-                        'interests?count=50&order_by=hot&start=%s' % end_idx),
+                        'interests?count=50&order_by=hot&start=%s' % _idx),
                     headers={"Referer": referer % douban_id},
                     callback=self.parse,
                     dont_filter=True

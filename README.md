@@ -2,7 +2,7 @@
  * @Date: 2022-09-23 10:56:14
  * @LastEditors: Jagger
  * @Description: 
- * @LastEditTime: 2022-09-24 14:55:49
+ * @LastEditTime: 2022-11-05 10:17:45
  * @FilePath: /ScrapyDouban/README.md
 -->
 ## ScrapyDouban
@@ -71,3 +71,23 @@ douban_adminer 容器基于 adminer:4，默认映射端口 8080:8080 以方那�
 --------
 
 douban.pipelines.CoverPipeline 通过对 spider.name 进行过滤来处理封面下载逻辑，所下载图片文件的保存路径为 douban_scrapy 容器的 /srv/ScrapyDouban/storage 目录。
+
+
+
+### 数据流程
+----------
+```
+所有的数据通过movie_box来连接所有的数据。
+if mtime_id 发生变动
+    重新爬取mtime
+
+
+if douban_id发生变动:
+    重新爬取movie_meta
+    重新爬取movie_comments
+        重新更新moviebox中comments的数量mysql_update_comments_count.py
+        重新导出top200.csv的数据
+
+if movie_box, mtime, movie 发生变动:
+    重新生成总表信息
+```
